@@ -59,8 +59,8 @@
 	
     .link-group input[type=checkbox]:checked + label:before {
         content: '?';
-		margin-right: 5px;
-	}
+    		margin-right: 5px;
+    	}
 </style>
 
   <div id = 'map'></div>  
@@ -98,30 +98,26 @@
      var link = document.createElement('input');
      link.type = 'checkbox';
      link.checked = true;
-	 link.className = 'link-group';
-	 link.textContent = name;
-     linkGroup.appendChild(input);
+     // link.className = 'link-group';
+     // link.textContent = name;
+     linkGroup.appendChild(link);
    
-     var label = document.createElement('label');
-     label.setAttribute('for', id);
-     label.textContent = name;
-     linkGroup.appendChild(label);
+     // var label = document.createElement('label');
+     // label.setAttribute('for', id);
+     // label.textContent = name;
+     // linkGroup.appendChild(label);
    
-     link.addEventListener('change', function(e) {
+     link.addEventListener('click', function(e) {
        map.setLayoutProperty(id, 'visibility',
-	     e.target.checked ? 'visible' : 'none');
+       e.target.checked ? 'visible' : 'none');
      });
 
-	 var layer = document.getElementByID('link-group');
-	 layers.appendChild(link);
+  	 // var layer = document.getElementById('link-group');
+  	 // layer.appendChild(link);
 	 
    };
    
    
-
-	
-	
-  
 //  document.getElementById('listing-group').addEventListener('change', function(e) {
 //    var layer = e.target.id;
 //	if (e.target.checked) {
