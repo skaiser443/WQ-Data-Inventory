@@ -16,16 +16,16 @@ var map = new mapboxgl.Map({
 	minZoom: [7.0],
 });
 
-map.on('load', function () {
+map.on('style.load', function () {
 	map.addSource('monitoring', {
 		type: 'vector',
-		url: 'mapbox://skaisericprb.4a3bqm34'
+		url: 'mapbox://skaisericprb.ado930is'
 	});
     map.addLayer({
 	    id: 'monitoring',
 	    type: 'circle',
 	    source: 'monitoring',
-		'source-layer': 'WQ_Sites-7w5zir',
+		'source-layer': 'WQ_Sites-a2dz9s',
 	    paint: {
 		    'circle-radius': 6,
 		    'circle-color': "#4169DB"
@@ -46,19 +46,21 @@ map.on('load', function () {
 			'line-width': 1
 		}
 	});
+    
+	map.setFilter('monitoring', ['all', ['in', 'Source'].concat(agencies), ['in', 'HUC_NAME'].concat(subregions)]);
+      _.forEach(['agency', 'subregion'], function(category) {
+	      setEventListeners(category);
+      })
 });
 
-// build agency filter options //
 
-var agencies = ['DDOE', 'MD DNR', 'ACCD', 'MBSS', 'RI', 'CBP', 'WQP', 'Arlington County, VA', 'COR', 'NPS', 'FOAC', 'NOAA', 'WV DEP', 'USGS', 'VA DEQ', 'FOSC'];
+// ***ADD CHECKBOX TO HIDE SHOW LAYERS*** //
+
+var agencies = ['Adams County Conservation District', 'Arlington County', 'Chesapeake Bay Program', 'City of Rockville', 'D.C. Dept of Environment', 'Friends of Accotink Creek', 'Friends of Silgo Creek', 'MD Dept of Natural Resources', 'Maryland Biological Stream Survey', 'National Park Service', 'National Water Quality Monitoring Council', 'NOAA', 'Renfrew Institute', 'USGS', 'VA Dept of Environmental Quality', 'WV Dept of Environmental Protection'];
 var agency_container = document.getElementById('agencies');
-
-// build subregion filter options //
 
 var subregions = ['Conococheague-Opequon', 'Monocacy', 'Cacapon-Town', 'North Branch Potomac', 'Middle Potomac-Catoctin', 'South Branch Potomac', 'Shenandoah', 'Middle Potomac-Anacostia-Occoquan', 'North Fork Shenandoah', 'South Fork Shenandoah', 'Lower Potomac'];
 var subregions_container = document.getElementById('subregions');
-
-// ***ADD CHECKBOX TO HIDE SHOW LAYERS*** //
 
 _.forEach([{
   collection: agencies,
@@ -78,14 +80,23 @@ _.forEach([{
 })
 
 // add functionality to tabs -- each one hides the other when it is selected
+var info_tab = document.getElementById('info-tab');
 var agency_tab = document.getElementById('agency-tab');
 var subregion_tab = document.getElementById('subregion-tab');
 
+//info_tab.addEventListener('click', function(e) {
+//  if (info_tab.contains('hidden')) {
+//    subregions_container.classList.toggle('hidden');
+//	agency_container.classList.toggle('hidden');
+//    info_tab.toggle('hidden');
+//  }
+//});
 
 agency_tab.addEventListener('click', function(e) {
   if (agency_container.classList.contains('hidden')) {
     subregions_container.classList.toggle('hidden');
     agency_container.classList.toggle('hidden');
+//	info_tab.toggle('hidden');
   }
 });
 
@@ -93,6 +104,7 @@ subregion_tab.addEventListener('click', function(e) {
   if (subregions_container.classList.contains('hidden')) {
     subregions_container.classList.toggle('hidden');
     agency_container.classList.toggle('hidden');
+//	info_tab.toggle('hidden');
   }
 });
 
@@ -101,39 +113,36 @@ subregion_tab.addEventListener('click', function(e) {
 //var district_template_string = "<% if (district.state) { %><p><strong>State: </strong><%= district.state %></p><% } %><% if (district.district) {%><p><strong>District: </strong><%= district.district %></p><% } %><% if (district.firstName) {%><p><strong>Representative: </strong><%= district.firstName %> <%= district.lastName %></p><% } %>";
 //var district_template = _.template(district_template_string, {variable: 'district'});
 
-  map.on('style.load', function() {
-    map.setFilter('WQ_Sites-7w5zir', ['all', ['in', 'Source'].concat(agencies), ['in', 'HUC_NAME'].concat(subregions)]);
-    _.forEach['agency', 'subregion'], function(category) {
-	    setEventListeners(category);
-    }
-  });
-	
-    function setEventListeners(type) {
-    var inputs = document.querySelectorAll("input." + type);
-    _.forEach(inputs, function(box) {
-      box.addEventListener('click', function() {
-        var filterIndex = type === 'agency' ? 1 : 2;
-        var filter = map.getFilter('WQ_Sites-7w5zir');
-        var currentFilter = filter[filterIndex];
-        var id = box.id.split('_').join(' ');
-        var newFilter;
-        if (box.hasAttribute('checked')) {
-          box.removeAttribute('checked');
-          // remove unchecked item from the current filter
-          newFilter = _.filter(currentFilter, function(d) {
-            return d !== id;
-          });
-        } else {
-          box.setAttribute('checked', 'checked');
-          // add checked item to the current filter
-          newFilter = currentFilter.concat([id])
-        }
+
+// ***SET EVENT LISTENERS ON CHECKBOXES TO FILTER DATA*** //
+
+function setEventListeners(type) {
+var inputs = document.querySelectorAll("input." + type);
+  _.forEach(inputs, function(box) {
+    box.addEventListener('click', function() {
+      var filterIndex = type === 'agency' ? 1 : 2;
+      var filter = map.getFilter('monitoring');
+      var currentFilter = filter[filterIndex];
+      var id = box.id.split('_').join(' ');
+      var newFilter;
+      if (box.hasAttribute('checked')) {
+        box.removeAttribute('checked');
+        // remove unchecked item from the current filter
+        newFilter = _.filter(currentFilter, function(d) {
+          return d !== id;
+        });
+      } else {
+        box.setAttribute('checked', 'checked');
+        // add checked item to the current filter
+        newFilter = currentFilter.concat([id])
+      }
         // replace old filter with the newly updated filter
         filter[filterIndex] = newFilter;
-        map.setFilter('WQ_Sites-7w5zir', filter);
-      });
+        map.setFilter('monitoring', filter);
     });
-  };
+  });
+};
+
 	
 //  map.on('click', function (e) {
 //    var features = map.queryRenderedFeatures(e.point, {
