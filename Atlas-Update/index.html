@@ -8,7 +8,6 @@
   <link href='https://api.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.css' rel='stylesheet' />
   <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.3.1/mapbox-gl-geocoder.css' type='text/css' />
   <link rel="stylesheet" href="style.css"/>
-  <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.14/turf.min.js"></script>
 </header>
 
 <body>
@@ -48,25 +47,35 @@
   
   <div class="row">
   
-	  
-
-    <div id="sidebar">
+  <div id="sidebar">
       <div class="col-2 sidebar">
-	    <div class="button-group">
-	      <a href='#' class='button space-bottom2 fill-teal active col4' id="info-tab">Info</a>
-          <a href='#' class='button space-bottom2 fill-teal col4' id="agency-tab">Agency</a>
-          <a href='#' class='button space-bottom2 fill-teal col4' id="subregion-tab">Subregion</a>
+	    <ul class="tab">
+		  <li><a href='javascript:void(0)' class='tablinks' onclick="openTab(event, 'Info')" id='info-tab'>Info</a></li>
+		  <li><a href='javascript:void(0)' class='tablinks' onclick="openTab(event, 'Agency')" id='agency-tab'>Agency/Organization</a></li>
+		  <li><a href='javascript:void(0)' class='tablinks' onclick="openTab(event, 'Subregion')" id='subregion-tab'>Watershed</a></li>
+		</ul>
+		<div id='Info' class='sidebar-text'>
+		  <p>Welcome to the Potomac River basin Water Quality Monitoring Inventory!<br></br>
+		  Water quality managers, researchers, and decision-makers depend on available water quality data, but it can be a challenge just to find the data collected for a specific waterway. To this end, ICPRB staff members produced an inventory of available water quality data sources in the Potomac River basin that includes information on watershed characteristics such as land use, zoning, elevation, and precipitation to help explain water quality patterns seen in the data.<br></br>
+		  To use this tool, click on the "Agency/Organization" or "Watershed" tabs above to filter water quality monitoring locations by agency/organization responsible for maintaining each location, sub-watershed, or both.<br></br>
+		  The following products have been developed as part of this effort:<br>
+		  <ol type="1" class="sidebar-text">
+		    <li>1. Project Report - provides a summary of the inventory, a description of data sources and how to obtain data, an identification of gaps in the inventory, and a discussion of next steps.<br></br></li>
+			<li>2. Mapping Interface - available to assist users in identifying monitoring locations of interest. The map displays water quality data monitoring locations that are currently included in the inventory. A pop-up window appears for each location by clicking on the monitoring point. The pop-up window includes key information about the monitoring effort including either contact information or a web link to access the data.<br></br></li>
+			<li>3. Water Quality Inventory Dataset - users can download the datasheet to obtain more information about the data sources without downloading the data. Monitoring locations on the map are linked to the spreadsheet inventory via the Source_No field.<br></br></li>
+		  </ol>
+		  Contact <a href='mailto:skaiser@icprb.org'>Scott Kaiser</a> with questions or to submit additional water quality data sources for inclusion in the inventory.
+		  </p>
 		</div>
-		<div class="button-container">
-          <div class='checkbox-pill col2' id='agencies'></div>
-          <div class='checkbox-pill col6 hidden' id='subregions'></div>
+		<div id='Agency' class='sidebar-text hidden'>
+          <div class='checkbox-pill input' id='agencies'></div>
+		</div>
+		<div id='Subregion' class='sidebar-text hidden'>
+          <div class='checkbox-pill input' id='subregions'></div>
 		</div>
 	  </div>	
-    </div>
+    </div>	  
 
-
-
-  
 <!--END SIDEBAR-->
   
   <div id="map" class="col-6"></div>

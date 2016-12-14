@@ -16,21 +16,35 @@ var map = new mapboxgl.Map({
 	minZoom: [7.0],
 });
 
-map.on('load', function () {
+map.on('style.load', function () {
 	map.addSource('monitoring', {
 		type: 'vector',
-		url: 'mapbox://skaisericprb.4a3bqm34'
+		url: 'mapbox://skaisericprb.ado930is'
 	});
     map.addLayer({
 	    id: 'monitoring',
-	    type: 'circle',
+	    type: 'symbol',
+		layout: {
+			'icon-image': 'marker-11',
+			'icon-allow-overlap': true
+		},
 	    source: 'monitoring',
-		'source-layer': 'WQ_Sites-7w5zir',
-	    paint: {
-		    'circle-radius': 6,
-		    'circle-color': "#4169DB"
-	    }
+		'source-layer': 'WQ_Sites-a2dz9s',
+	    paint: {}
     });
+	
+	map.addLayer({
+		id: 'monitor-hover',
+		type: 'symbol',
+		layout: {
+			'icon-image': 'wq-site',
+			'icon-size': 1.5
+		},
+		source: 'monitoring',
+		'source-layer': 'WQ_Sites-a2dz9s',
+		paint: {},
+		filter: ["==", "Station_id", ""]
+	});
 	
 	map.addSource('subwatershed', {
 		type: 'vector',
@@ -46,19 +60,20 @@ map.on('load', function () {
 			'line-width': 1
 		}
 	});
+    
+	map.setFilter('monitoring', ['all', ['in', 'Source'].concat(agencies), ['in', 'HUC_NAME'].concat(subregions)]);
+      _.forEach(['agency', 'subregion'], function(category) {
+	      setEventListeners(category);
+      })
 });
 
-// build agency filter options //
+// ***ADD CHECKBOX TO HIDE SHOW LAYERS*** //
 
-var agencies = ['DDOE', 'MD DNR', 'ACCD', 'MBSS', 'RI', 'CBP', 'WQP', 'Arlington County, VA', 'COR', 'NPS', 'FOAC', 'NOAA', 'WV DEP', 'USGS', 'VA DEQ', 'FOSC'];
+var agencies = ['Adams County Conservation District', 'Arlington County', 'Chesapeake Bay Program', 'City of Rockville', 'D.C. Dept of Environment', 'Friends of Accotink Creek', 'Friends of Silgo Creek', 'MD Dept of Natural Resources', 'Maryland Biological Stream Survey', 'National Park Service', 'National Water Quality Monitoring Council', 'NOAA', 'Renfrew Institute', 'USGS', 'VA Dept of Environmental Quality', 'WV Dept of Environmental Protection'];
 var agency_container = document.getElementById('agencies');
-
-// build subregion filter options //
 
 var subregions = ['Conococheague-Opequon', 'Monocacy', 'Cacapon-Town', 'North Branch Potomac', 'Middle Potomac-Catoctin', 'South Branch Potomac', 'Shenandoah', 'Middle Potomac-Anacostia-Occoquan', 'North Fork Shenandoah', 'South Fork Shenandoah', 'Lower Potomac'];
 var subregions_container = document.getElementById('subregions');
-
-// ***ADD CHECKBOX TO HIDE SHOW LAYERS*** //
 
 _.forEach([{
   collection: agencies,
@@ -77,80 +92,89 @@ _.forEach([{
   })
 })
 
-// add functionality to tabs -- each one hides the other when it is selected
-var agency_tab = document.getElementById('agency-tab');
-var subregion_tab = document.getElementById('subregion-tab');
+// ***ADD FUNCTION TO SWITCH BETWEEN SIDEBAR TABS*** //
 
+function openTab(evt, tabName) {
+    var i, sidebar, tablinks;
 
-agency_tab.addEventListener('click', function(e) {
-  if (agency_container.classList.contains('hidden')) {
-    subregions_container.classList.toggle('hidden');
-    agency_container.classList.toggle('hidden');
-  }
-});
-
-subregion_tab.addEventListener('click', function(e) {
-  if (subregions_container.classList.contains('hidden')) {
-    subregions_container.classList.toggle('hidden');
-    agency_container.classList.toggle('hidden');
-  }
-});
-
-// ADD TOOLTIP //
-	
-//var district_template_string = "<% if (district.state) { %><p><strong>State: </strong><%= district.state %></p><% } %><% if (district.district) {%><p><strong>District: </strong><%= district.district %></p><% } %><% if (district.firstName) {%><p><strong>Representative: </strong><%= district.firstName %> <%= district.lastName %></p><% } %>";
-//var district_template = _.template(district_template_string, {variable: 'district'});
-
-  map.on('style.load', function() {
-    map.setFilter('WQ_Sites-7w5zir', ['all', ['in', 'Source'].concat(agencies), ['in', 'HUC_NAME'].concat(subregions)]);
-    _.forEach['agency', 'subregion'], function(category) {
-	    setEventListeners(category);
+    sidebar = document.getElementsByClassName("sidebar-text");
+    for (i = 0; i < sidebar.length; i++) {
+        sidebar[i].style.display = "none";
     }
-  });
+
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+};
+
+
+
+// ***ADD TOOLTIP*** //
 	
-    function setEventListeners(type) {
-    var inputs = document.querySelectorAll("input." + type);
-    _.forEach(inputs, function(box) {
-      box.addEventListener('click', function() {
-        var filterIndex = type === 'agency' ? 1 : 2;
-        var filter = map.getFilter('WQ_Sites-7w5zir');
-        var currentFilter = filter[filterIndex];
-        var id = box.id.split('_').join(' ');
-        var newFilter;
-        if (box.hasAttribute('checked')) {
-          box.removeAttribute('checked');
-          // remove unchecked item from the current filter
-          newFilter = _.filter(currentFilter, function(d) {
-            return d !== id;
-          });
-        } else {
-          box.setAttribute('checked', 'checked');
-          // add checked item to the current filter
-          newFilter = currentFilter.concat([id])
-        }
+var station_template_string = "<% { %><p><strong>Monitoring Station</strong></p><% } %><% if (station.Agency) { %><p><strong>Agency: </strong><%= station.Agency %></p><% } %><% if (station.Station_id) {%><p><strong>Station ID: </strong><%= station.Station_id %></p><% } %>";
+var station_template = _.template(station_template_string, {variable: 'station'});
+
+// ***SET EVENT LISTENERS ON CHECKBOXES TO FILTER DATA*** //
+
+function setEventListeners(type) {
+var inputs = document.querySelectorAll("input." + type);
+  _.forEach(inputs, function(box) {
+    box.addEventListener('click', function() {
+      var filterIndex = type === 'agency' ? 1 : 2;
+      var filter = map.getFilter('monitoring');
+      var currentFilter = filter[filterIndex];
+      var id = box.id.split('_').join(' ');
+      var newFilter;
+      if (box.hasAttribute('checked')) {
+        box.removeAttribute('checked');
+        // remove unchecked item from the current filter
+        newFilter = _.filter(currentFilter, function(d) {
+          return d !== id;
+        });
+      } else {
+        box.setAttribute('checked', 'checked');
+        // add checked item to the current filter
+        newFilter = currentFilter.concat([id])
+      }
         // replace old filter with the newly updated filter
         filter[filterIndex] = newFilter;
-        map.setFilter('WQ_Sites-7w5zir', filter);
-      });
+        map.setFilter('monitoring', filter);
     });
-  };
-	
-//  map.on('click', function (e) {
-//    var features = map.queryRenderedFeatures(e.point, {
-//	    layers: ['Fed-Leg-Dist-DC', 'Fed-Leg-Dist-MD', 'Fed-Leg-Dist-PA', 'Fed-Leg-Dist-VA', 'Fed-Leg-Dist-WV']
-//    });
-//  
-//    if (!features.length) {
-//      return;
-//    }
-//	  
-//    var feature = features[0];
-//    var ttip = new mapboxgl.Popup()
-//	    .setLngLat(map.unproject(e.point))
-//        .setHTML(district_template(features[0].properties))
-//	    .addTo(map);
-//  });
+  });
+};
 
+  map.on('click', function (e) {
+    var features = map.queryRenderedFeatures(e.point, {
+	    layers: ['monitoring']
+    });
+  
+    if (!features.length) {
+      return;
+    }
+	  
+    var feature = features[0];
+    var ttip = new mapboxgl.Popup()
+	    .setLngLat(map.unproject(e.point))
+        .setHTML(station_template(features[0].properties))
+	    .addTo(map);
+  });
+  
+  map.on('mousemove', function(e) {
+	  var features = map.queryRenderedFeatures(e.point, {layers: ["monitoring"] });
+	  if (features.length) {
+		  map.setFilter("monitor-hover", ["==", "Station_id", features[0].properties.Station_id]);
+	  } else {
+		  map.setFilter("monitor-hover", ["==", "Station_id", ""]);
+	  }
+  });
+
+  map.on('mouseout', function() {
+	  map.setFilter("monitor-hover", ["==", "Station_id", ""]);
+  });
 
 	
 map.addControl(new mapboxgl.Geocoder({position: 'top-right'}));
